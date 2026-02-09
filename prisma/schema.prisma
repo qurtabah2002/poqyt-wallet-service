@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ReservationStatus {
+  ACTIVE
+  RELEASED
+  SETTLED
+}
+
+enum LedgerEntryType {
+  CREDIT
+  DEBIT
+  RESERVE
+  RELEASE
+  SETTLE
+  ADJUSTMENT
+}
+
+model Wallet {
+  id              String   @id @default(cuid())
+  ownerType       String   // "INVESTOR" for now
+  ownerId         String
+  currency        String   // "NOK"
+  availableOre    BigInt   @default(0)
+  reservedOre     BigInt   @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  ledgerEntries   LedgerEntry[]
+  reservations    Reservation[]
+
+  @@unique([ownerType, ownerId, currency])
+  @@index([ownerId])
+}
+
+model LedgerEntry {
+  id            String         @id @default(cuid())
+  walletId      String
+  type          LedgerEntryType
+  amountOre     BigInt
+  currency      String
+  referenceType String         // PAYMENT / INVESTMENT / CAMPAIGN etc.
+  referenceId   String
+  metadata      Json?
+  createdAt     DateTime       @default(now())
+
+  wallet        Wallet         @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, createdAt])
+  @@index([referenceType, referenceId])
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  walletId    String
+  campaignId  String
+  amountOre   BigInt
+  status      ReservationStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  wallet      Wallet            @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([campaignId])
+}
+
+model ProcessedEvent {
+  eventId     String   @id
+  eventType   String
+  processedAt DateTime @default(now())
+}
