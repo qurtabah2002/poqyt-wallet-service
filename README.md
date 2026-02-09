@@ -1,3 +1,5 @@
-This repo is part of micro-service based system. 
-Just an example of architecture I designed and developed. 
-Kafka/RabbitMQ shall be used for the event publishing and subcription by all services. 
+Kafka or RabbitMQ - event publishing and subscription between services
+Redis - caching, distributed locks, and potential outbox/event buffering
+PostgreSQL - transactional storage per service (Prisma for communication)
+API Gateway - service routing and authentication
+Docker/Kubernetes - deployment
